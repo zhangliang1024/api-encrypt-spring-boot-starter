@@ -1,11 +1,19 @@
 package com.pzy.zhliang.api.encrypt.util;
 
+import org.apache.commons.codec.binary.Base64;
+
 import javax.crypto.Cipher;
 import java.io.ByteArrayOutputStream;
 import java.security.Key;
 import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * RSA Util
@@ -16,16 +24,55 @@ public class RSAUtil{
      * encryption algorithm RSA
      */
     public static final String KEY_ALGORITHM = "RSA";
-
     /**
      * RSA Maximum Encrypted Plaintext Size
      */
     private static final int MAX_ENCRYPT_BLOCK = 117;
-
     /**
      * RSA Maximum decrypted ciphertext size
      */
     private static final int MAX_DECRYPT_BLOCK = 256;
+    /**
+     * RSA 位数 如果采用2048 上面最大加密和最大解密则须填写:  245 256
+     */
+    private static final int INITIALIZE_LENGTH = 1024;
+    /**
+     * Map获取公钥的key
+     */
+    private static final String PUBLIC_KEY = "publicKey";
+    /**
+     * Map获取私钥的key
+     */
+    private static final String PRIVATE_KEY = "privateKey";
+    /**
+     * 后端RSA的密钥对(公钥和私钥)Map，由静态代码块赋值
+     */
+    private static Map<String, Object> genKeyPair = new HashMap<>();
+
+    static {
+        try {
+            genKeyPair.putAll(genKeyPair());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 生成密钥对(公钥和私钥)
+     */
+    private static Map<String, Object> genKeyPair() throws Exception {
+        KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance(KEY_ALGORITHM);
+        keyPairGen.initialize(INITIALIZE_LENGTH);
+        KeyPair keyPair = keyPairGen.generateKeyPair();
+        RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
+        RSAPrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
+        Map<String, Object> keyMap = new HashMap<String, Object>(2);
+        //公钥
+        keyMap.put(PUBLIC_KEY, publicKey);
+        //私钥
+        keyMap.put(PRIVATE_KEY, privateKey);
+        return keyMap;
+    }
 
     /**
      * encryption
@@ -96,4 +143,21 @@ public class RSAUtil{
         out.close();
         return decryptedData;
     }
+
+    /**
+     * 获取私钥
+     */
+    public static String getPrivateKey() {
+        Key key = (Key) genKeyPair.get(PRIVATE_KEY);
+        return Base64.encodeBase64String(key.getEncoded());
+    }
+
+    /**
+     * 获取公钥
+     */
+    public static String getPublicKey() {
+        Key key = (Key) genKeyPair.get(PUBLIC_KEY);
+        return Base64.encodeBase64String(key.getEncoded());
+    }
+
 }
