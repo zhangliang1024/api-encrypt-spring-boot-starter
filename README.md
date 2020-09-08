@@ -1,5 +1,5 @@
 # api-encrypt-spring-boot-starter
-> 基于注解+AOP实现 API接口的加解密操作
+> 基于注解+AOP实现 API接口的加解密操作。采用RS非对象加解密方式
 [演示demo](https://github.com/zhangliang1024/spring-fox-spring-boot-sample/tree/master/src/main/java/com/zhliang/pzy/spring/fox/encrypt)
 ---
 
